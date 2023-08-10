@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "irace"
+version = "0.1.0"
+authors = [
+    { name = "Manuel López-Ibáñez", email = "manuel.lopez-ibanez@manchester.ac.uk" },
+    { name = "Deyao Chen", email = "chendeyao000@gmail.com" },
+    { name = "Jonathan Wurth", email = "jonathan.wurth@uni-a.de" }
+]
+
+description = "Minimal Python bindings for irace: Iterated Racing for Automatic Algorithm Configuration."
+readme = "README.md"
+requires-python = ">=3.7"
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "numpy",
+    "rpy2 >= 3.5.6",
+    "scipy",
+    "pandas >= 1.0.0"
+]
