@@ -30,10 +30,7 @@ class Scenario:
 
     def _check(self):
         if self.n_jobs not in (0, 1) and os.name == 'nt':
-            raise NotImplementedError(
-                'Parallel running on Windows is not supported yet. '
-                'Follow https://github.com/auto-optimization/iracepy/issues/16 for updates. '
-                'Alternatively, use Linux or MacOS or the irace R package directly.')
+            raise NotImplementedError('parallel running on Windows is not supported')
 
     def py2rpy(self, target_runner: SexpClosure) -> ListVector:
         scenario = {
