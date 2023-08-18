@@ -19,10 +19,7 @@ def rpy2py_recursive(data: Any) -> Any:
     elif data == rinterface.na_values.NA_Character:
         return None
     elif type(data) in [robjects.DataFrame, robjects.ListVector]:
-        if len(data) == 1:
-            return rpy2py_recursive(data[0])
-        else:
-            return OrderedDict(zip(data.names, [rpy2py_recursive(elt) for elt in data]))
+        return OrderedDict(zip(data.names, [rpy2py_recursive(elt) for elt in data]))
     elif type(data) in [robjects.StrVector]:
         if len(data) == 1:
             return rpy2py_recursive(data[0])
