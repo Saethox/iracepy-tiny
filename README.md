@@ -3,7 +3,9 @@
 Minimal Python bindings
 for [irace: Iterated Racing for Automatic Algorithm Configuration]((https://github.com/MLopez-Ibanez/irace)).
 
-This package is inspired by [`iracepy`](https://github.com/auto-optimization/iracepy).
+This package is a fork/reimplementation of [`iracepy`](https://github.com/auto-optimization/iracepy) with a reduced
+feature set, and tries to be somewhat more pythonic (i.e. define scenarios and parameter spaces dynamically in code, not
+in static configuration files).
 
 ## Getting Started
 
