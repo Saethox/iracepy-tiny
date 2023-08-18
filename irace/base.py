@@ -16,11 +16,15 @@ Cost: TypeAlias = float | tuple[float, float] | dict[str, float]
 
 
 class TargetRunner(Protocol):
+    """A runner that executes the target algorithm with the given configuration and experiment data."""
+
     def __call__(self, experiment: Experiment, scenario: Scenario) -> Cost: ...
 
 
 def _py2rpy_target_runner(target_runner: TargetRunner, scenario: Scenario,
                           parameter_space: ParameterSpace) -> SexpClosure:
+    """Converts a Python `TargetRunner` into an R-callable function that properly converts types."""
+
     @rternalize
     def inner(experiment: ListSexpVector, _: ListSexpVector) -> ListVector:
         experiment = Experiment.rpy2py(ListVector(experiment), scenario, parameter_space)

@@ -8,6 +8,8 @@ from .params import ParameterSpace, Real, Bool, Integer, Categorical, Ordinal
 
 
 def repair_configuration(configuration: dict[str, Any], parameter_space: ParameterSpace):
+    """Convert the raw configuration into the appropriate type for the corresponding parameter subspace."""
+
     for name, raw_param in configuration.items():
         subspace = parameter_space.get_subspace(name)
 
@@ -16,8 +18,10 @@ def repair_configuration(configuration: dict[str, Any], parameter_space: Paramet
         elif isinstance(subspace, Integer):
             param = int(raw_param)
         elif isinstance(subspace, Bool):
+            # `bool` is represented as discrete with `["0", "1"]` variants.
             param = bool(int(raw_param))
         elif isinstance(subspace, Categorical) or isinstance(subspace, Ordinal):
+            # categorical and ordinal are represented as integers, so we need to convert to the real variant.
             param = subspace.values[int(raw_param)]
         else:
             param = None

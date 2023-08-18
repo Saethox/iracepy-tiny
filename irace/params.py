@@ -83,7 +83,7 @@ class Categorical(DiscreteParameterSubspace):
 
 
 class Bool(Categorical):
-    """Boolean parameters are expressed as an integer parameters with values 0 and 1."""
+    """Boolean parameters are expressed as categorical parameters with values `True` and `False`."""
 
     def __init__(self, name: str, condition: Optional[str] = None) -> None:
         super().__init__(name=name, variants=[False, True], condition=condition)

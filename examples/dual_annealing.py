@@ -23,7 +23,7 @@ def make_runner(lower: float = -5.12, upper: float = 5.12, dim: int = 10) -> Cal
     return inner
 
 
-param_space = ParameterSpace([
+parameter_space = ParameterSpace([
     Real('initial_temp', 0.02, 5e4, log=True),
     Real('restart_temp_ratio', 1e-4, 1, log=True),
     Real('visit', 1.001, 3),
@@ -38,5 +38,5 @@ scenario = Scenario(
 
 if __name__ == '__main__':
     target_runner = make_runner(dim=10)
-    result = irace(target_runner, scenario, param_space, return_df=True)
+    result = irace(target_runner, scenario, parameter_space, return_df=True)
     print(result)

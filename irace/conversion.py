@@ -32,8 +32,6 @@ def rpy2py_recursive(data: Any) -> Any:
             return np.array(data)
     else:
         if hasattr(data, "rclass"):  # An unsupported r class
-            raise KeyError('Could not proceed, type {} is not defined'
-                           'to add support for this type, just add it to the imports '
-                           'and to the appropriate type list above'.format(type(data)))
+            raise KeyError(f"conversion for `{type(data)}` is not defined")
         else:
             return data  # We reached the end of recursion

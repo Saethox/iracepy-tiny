@@ -8,6 +8,8 @@ from ._rpackage import _irace
 
 
 class Scenario:
+    """Configuration for irace."""
+
     def __init__(
             self,
             max_experiments: int,

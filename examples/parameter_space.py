@@ -1,7 +1,7 @@
 from irace import *
 
 if __name__ == '__main__':
-    params = ParameterSpace([
+    parameter_space = ParameterSpace([
         Categorical('algorithm', ['as', 'mmas', 'eas', 'ras', 'acs']),
         Categorical('localsearch', [0, 1, 2, 3]),
         Real('alpha', 0, 5),
@@ -15,4 +15,4 @@ if __name__ == '__main__':
         Integer('elistants', 1, 750),
     ])
 
-    print(params.py2rpy())
+    print(parameter_space.py2rpy())
