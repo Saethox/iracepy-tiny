@@ -20,9 +20,9 @@ class Scenario:
             seed: Optional[int] = None,
             verbose: int = 0,
     ) -> None:
+        self.instances = instances
         self.max_experiments = max_experiments
         self.elitist = elitist
-        self.instances = instances
         self.deterministic = deterministic
         self.n_jobs = n_jobs
         self.seed = seed
@@ -46,9 +46,10 @@ class Scenario:
             'logFile': "",
         }
 
-        if self.instances is not None and len(self.instances) > 0:
-            scenario['instances'] = list(self.instances)
+        if self.instances is not None and self.instances:
+            scenario['instances'] = list(range(len(self.instances)))
         else:
+            # Provide a dummy instance
             scenario['instances'] = [0]
 
         if self.seed is not None:

@@ -6,21 +6,36 @@ from scipy.optimize import dual_annealing
 from irace import Experiment, Scenario, ParameterSpace, Real, Bool, irace
 
 
-def make_objective_function(dim: int = 10) -> Callable:
-    def objective_function(x: np.ndarray) -> float:
-        return np.sum(x * x - dim * np.cos(2 * np.pi * x)) + dim * np.size(x)
+class Instance(Callable):
+    dim: int
 
-    return objective_function
+    def __init__(self, dim: int):
+        self.dim = dim
 
 
-def make_runner(lower: float = -5.12, upper: float = 5.12, dim: int = 10) -> Callable:
-    bounds = list(zip([lower] * dim, [upper] * dim))
+class Rastrigin(Instance):
+    def __init__(self, dim: int, lower: float = -5.12, upper: float = 5.12):
+        super().__init__(dim=dim)
+        self.lower = lower
+        self.upper = upper
 
-    def inner(experiment: Experiment, scenario: Scenario) -> float:
-        return dual_annealing(make_objective_function(dim), bounds=bounds, seed=experiment.seed, maxfun=10_000,
-                              **experiment.configuration).fun
+    def __call__(self, x: np.ndarray) -> float:
+        return np.sum(x * x - self.dim * np.cos(2 * np.pi * x)) + self.dim * np.size(x)
 
-    return inner
+    @property
+    def bounds(self) -> list:
+        return list(zip([self.lower] * self.dim, [self.upper] * self.dim))
+
+
+def target_runner(experiment: Experiment, scenario: Scenario) -> float:
+    res = dual_annealing(
+        experiment.instance,
+        bounds=experiment.instance.bounds,
+        seed=experiment.seed,
+        maxfun=10_000,
+        **experiment.configuration
+    )
+    return res.fun
 
 
 parameter_space = ParameterSpace([
@@ -33,10 +48,10 @@ parameter_space = ParameterSpace([
 
 scenario = Scenario(
     max_experiments=180,
+    instances=[Rastrigin(dim) for dim in (10, 20, 30, 40, 50)],
     verbose=1,
 )
 
 if __name__ == '__main__':
-    target_runner = make_runner(dim=10)
     result = irace(target_runner, scenario, parameter_space, return_df=True)
     print(result)

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional, Iterable, Union, Sequence
 
+import numpy as np
 from rpy2.robjects import ListVector
 
 from ._rpackage import _irace
@@ -37,7 +38,7 @@ class NumericalParameterSubspace(ParameterSubspace, ABC):
 
     def format_bound(self, bound: Union[float, str, "NumericalParameterSubspace"]) -> str:
         if isinstance(bound, float):
-            return str(bound).replace('e-0', 'e-').replace('+', '')
+            return np.format_float_positional(bound, tim='-')
         elif isinstance(bound, str):
             return f'"{bound}"'
         elif isinstance(bound, type(self)):
@@ -116,5 +117,5 @@ class ParameterSpace:
     def py2rpy(self) -> ListVector:
         return _irace.readParameters(text=self._format_irace())
 
-    def get_subspace(self, name: str) -> ParameterSubspace:
-        return self.params[name]
+    def get_subspace(self, name: str) -> Optional[ParameterSubspace]:
+        return self.params.get(name)
