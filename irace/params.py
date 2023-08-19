@@ -38,7 +38,7 @@ class NumericalParameterSubspace(ParameterSubspace, ABC):
 
     def format_bound(self, bound: Union[float, str, "NumericalParameterSubspace"]) -> str:
         if isinstance(bound, float):
-            return np.format_float_positional(bound, tim='-')
+            return np.format_float_positional(bound, trim='-')
         elif isinstance(bound, str):
             return f'"{bound}"'
         elif isinstance(bound, type(self)):
