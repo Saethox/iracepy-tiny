@@ -2,9 +2,6 @@ from abc import ABC, abstractmethod
 from typing import Optional, Iterable, Union, Sequence
 
 import numpy as np
-from rpy2.robjects import ListVector
-
-from ._rpackage import _irace
 
 
 class ParameterSubspace(ABC):
@@ -15,10 +12,6 @@ class ParameterSubspace(ABC):
 
     def format_condition(self) -> str:
         return f"| {self.condition}" if self.condition is not None else ""
-
-    @abstractmethod
-    def format_irace(self) -> str:
-        pass
 
 
 class NumericalParameterSubspace(ParameterSubspace, ABC):
@@ -56,14 +49,14 @@ class NumericalParameterSubspace(ParameterSubspace, ABC):
 class Real(NumericalParameterSubspace):
     """Real parameters are numerical parameters that can take floating-point values within a given range."""
 
-    def format_irace(self) -> str:
+    def __str__(self) -> str:
         return self._format_line('r')
 
 
 class Integer(NumericalParameterSubspace):
     """Integer parameters are numerical parameters that can take only integer values within the given range"""
 
-    def format_irace(self) -> str:
+    def __str__(self) -> str:
         return self._format_line('i')
 
 
@@ -79,7 +72,7 @@ class DiscreteParameterSubspace(ParameterSubspace, ABC):
 class Categorical(DiscreteParameterSubspace):
     """Categorical parameters are defined by a set of possible values specified as list."""
 
-    def format_irace(self) -> str:
+    def __str__(self) -> str:
         return self._format_line('c')
 
 
@@ -96,7 +89,7 @@ class Ordinal(DiscreteParameterSubspace):
     possible values in the same format as for categorical parameters.
     """
 
-    def format_irace(self) -> str:
+    def __str__(self) -> str:
         return self._format_line('o')
 
 
@@ -110,12 +103,9 @@ class ParameterSpace:
         self.params = {param.name: param for param in params}
         self.forbidden = forbidden
 
-    def _format_irace(self):
+    def __str__(self):
         forbidden = ["[forbidden]", *self.forbidden] if self.forbidden is not None else []
-        return '\n'.join([param.format_irace() for param in self.params.values()] + forbidden)
-
-    def py2rpy(self) -> ListVector:
-        return _irace.readParameters(text=self._format_irace())
+        return '\n'.join([str(param) for param in self.params.values()] + forbidden)
 
     def get_subspace(self, name: str) -> Optional[ParameterSubspace]:
         return self.params.get(name)

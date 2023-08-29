@@ -1,10 +1,5 @@
-import logging
-
-import rpy2.rinterface_lib.callbacks
-
-from .base import irace
+from .base import irace, multi_irace, IraceRun
 from .experiment import Experiment
 from .params import ParameterSpace, Real, Integer, Categorical, Ordinal, Bool
 from .scenario import Scenario
-
-rpy2.rinterface_lib.callbacks.logger.setLevel(logging.ERROR)  # will display errors, but not warnings
+from .runner import TargetRunner

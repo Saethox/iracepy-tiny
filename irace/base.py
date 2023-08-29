@@ -1,59 +1,22 @@
-import math
-from typing import Any, TypeAlias, Protocol
+from typing import Any, Iterable, Optional
 
 import pandas as pd
-from rpy2.rinterface import SexpClosure, ListSexpVector, rternalize
-from rpy2.robjects import ListVector
 
-from ._rpackage import _irace
-from .conversion import converter
-from .experiment import Experiment, repair_configuration
 from .params import ParameterSpace
+from .runner import TargetRunner
 from .scenario import Scenario
-
-Configuration: TypeAlias = dict[str, Any]
-Cost: TypeAlias = float | tuple[float, float] | dict[str, float]
-
-
-class TargetRunner(Protocol):
-    """A runner that executes the target algorithm with the given configuration and experiment data."""
-
-    def __call__(self, experiment: Experiment, scenario: Scenario) -> Cost: ...
-
-
-def _py2rpy_target_runner(target_runner: TargetRunner, scenario: Scenario,
-                          parameter_space: ParameterSpace) -> SexpClosure:
-    """Converts a Python `TargetRunner` into an R-callable function that properly converts types."""
-
-    @rternalize
-    def inner(experiment: ListSexpVector, _: ListSexpVector) -> ListVector:
-        experiment = Experiment.rpy2py(ListVector(experiment), scenario, parameter_space)
-
-        try:
-            result = target_runner(experiment=experiment, scenario=scenario)
-        except Exception as e:
-            return ListVector(dict(cost=math.inf, error=str(e)))
-
-        if isinstance(result, float):
-            return ListVector(dict(cost=float(result)))
-        elif isinstance(result, tuple):
-            cost, time = result
-            return ListVector(dict(cost=float(cost), time=float(time)))
-        elif isinstance(result, dict):
-            return ListVector({key: float(value) for key, value in result.items()})
-        else:
-            raise NotImplementedError("`target_runner` returned an invalid result")
-
-    return inner
 
 
 def irace(target_runner: TargetRunner, scenario: Scenario, parameter_space: ParameterSpace, return_df: bool = False,
           remove_metadata: bool = True) -> pd.DataFrame | list[dict[str, Any]]:
     """irace: Iterated Racing for Automatic Algorithm Configuration."""
 
-    r_target_runner = _py2rpy_target_runner(target_runner, scenario, parameter_space)
-    r_scenario = scenario.py2rpy(r_target_runner)
-    r_params = parameter_space.py2rpy()
+    from ._rpy2 import _irace, py2rpy_scenario, py2rpy_target_runner, \
+        py2rpy_parameter_space, converter, repair_configuration
+
+    r_target_runner = py2rpy_target_runner(target_runner, scenario, parameter_space)
+    r_scenario = py2rpy_scenario(scenario, r_target_runner)
+    r_params = py2rpy_parameter_space(parameter_space)
 
     df = _irace.irace(r_scenario, r_params)
     df = converter.rpy2py(df)
@@ -70,3 +33,37 @@ def irace(target_runner: TargetRunner, scenario: Scenario, parameter_space: Para
         return pd.DataFrame.from_records(final_configurations)
     else:
         return final_configurations
+
+
+class IraceRun:
+    """A single run of irace with a given target runner, scenario and parameter space."""
+
+    def __init__(self, target_runner: TargetRunner, scenario: Scenario, parameter_space: ParameterSpace,
+                 name: Optional[str] = None) -> None:
+        self.target_runner = target_runner
+        self.scenario = scenario
+        self.parameter_space = parameter_space
+        self.name = name
+
+
+def multi_irace(runs: Iterable[IraceRun], n_jobs: int = -1, return_df: bool = False, return_named: bool = False,
+                remove_metadata: bool = True) \
+        -> list[pd.DataFrame] | list[list[dict[str, Any]]] | dict[str, list[dict[str, Any]]]:
+    """Multiple executions of irace in parallel."""
+
+    from joblib import delayed, Parallel
+
+    @delayed
+    def inner(run: IraceRun) -> pd.DataFrame | list[dict[str, Any]]:
+        result = irace(target_runner=run.target_runner, scenario=run.scenario, parameter_space=run.parameter_space,
+                       return_df=return_df, remove_metadata=remove_metadata)
+        print(f"A irace run has finished.")
+        return result
+
+    results = Parallel(n_jobs=n_jobs)(inner(run) for run in runs)
+
+    if return_named:
+        return {run.name if run.name is not None else f"run{i}": result for i, (run, result) in
+                enumerate(zip(runs, results))}
+    else:
+        return list(results)

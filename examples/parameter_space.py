@@ -1,4 +1,4 @@
-from irace import *
+from irace import ParameterSpace, Categorical, Real, Integer, Bool
 
 if __name__ == '__main__':
     parameter_space = ParameterSpace([
@@ -15,4 +15,4 @@ if __name__ == '__main__':
         Integer('elistants', 1, 750),
     ])
 
-    print(parameter_space.py2rpy())
+    print(parameter_space)

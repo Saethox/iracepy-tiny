@@ -1,11 +1,6 @@
 import os
 from typing import Optional, Sequence
 
-from rpy2.rinterface import SexpClosure
-from rpy2.robjects import ListVector
-
-from ._rpackage import _irace
-
 
 class Scenario:
     """Configuration for irace."""
@@ -33,26 +28,3 @@ class Scenario:
     def _check(self):
         if self.n_jobs not in (0, 1) and os.name == 'nt':
             raise NotImplementedError('parallel running on Windows is not supported')
-
-    def py2rpy(self, target_runner: SexpClosure) -> ListVector:
-        scenario = {
-            'targetRunner': target_runner,
-            'maxExperiments': self.max_experiments,
-            'elitist': int(self.elitist),
-            'deterministic': int(self.deterministic),
-            'quiet': int(self.verbose == 0),
-            'debugLevel': self.verbose,
-            'parallel': self.n_jobs,
-            'logFile': "",
-        }
-
-        if self.instances is not None and self.instances:
-            scenario['instances'] = list(range(len(self.instances)))
-        else:
-            # Provide a dummy instance
-            scenario['instances'] = [0]
-
-        if self.seed is not None:
-            scenario['seed'] = self.seed
-
-        return _irace.checkScenario(ListVector(scenario))
