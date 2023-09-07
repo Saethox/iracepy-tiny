@@ -13,7 +13,7 @@ For more information on `irace`, see its [documentation](https://mlopez-ibanez.g
 
 ### Requirements
 
-- [irace](https://mlopez-ibanez.github.io/irace/#installing-the-irace-package) R package
+- [irace](https://mlopez-ibanez.github.io/irace/#github-development-version) R package (development version)
 - [Python](https://www.python.org)
 
 Tested with Python 3.11.
@@ -21,7 +21,7 @@ Tested with Python 3.11.
 ### Installation
 
 ```shell
-pip install git+https://github.com/Saethox/iracepy-tiny
+pip install git+https://github.com/Saethox/iracepy-tiny@min-experiments
 ```
 
 ## Examples

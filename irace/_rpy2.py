@@ -145,6 +145,7 @@ def py2rpy_scenario(scenario: Scenario, r_target_runner: SexpClosure) -> ListVec
     r_scenario = {
         'targetRunner': r_target_runner,
         'maxExperiments': scenario.max_experiments,
+        'minExperiments': scenario.min_experiments,
         'elitist': int(scenario.elitist),
         'deterministic': int(scenario.deterministic),
         'quiet': int(scenario.verbose == 0),
