@@ -144,8 +144,6 @@ def py2rpy_target_runner(target_runner: TargetRunner, scenario: Scenario,
 def py2rpy_scenario(scenario: Scenario, r_target_runner: SexpClosure) -> ListVector:
     r_scenario = {
         'targetRunner': r_target_runner,
-        'maxExperiments': scenario.max_experiments,
-        'minExperiments': scenario.min_experiments,
         'elitist': int(scenario.elitist),
         'deterministic': int(scenario.deterministic),
         'quiet': int(scenario.verbose == 0),
@@ -153,6 +151,12 @@ def py2rpy_scenario(scenario: Scenario, r_target_runner: SexpClosure) -> ListVec
         'parallel': scenario.n_jobs,
         'logFile': "",
     }
+
+    if scenario.max_experiments is not None:
+        r_scenario['maxExperiments'] = scenario.max_experiments
+
+    if scenario.min_experiments is not None:
+        r_scenario['minExperiments'] = scenario.min_experiments
 
     if scenario.instances is not None and scenario.instances:
         r_scenario['instances'] = list(range(len(scenario.instances)))
