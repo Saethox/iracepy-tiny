@@ -1,4 +1,5 @@
-from abc import ABC, abstractmethod
+from abc import ABC
+from collections import OrderedDict
 from typing import Optional, Iterable, Union, Sequence
 
 import numpy as np
@@ -100,7 +101,7 @@ class ParameterSpace:
     forbidden: Optional[Iterable[str]]
 
     def __init__(self, params: Iterable[ParameterSubspace], forbidden: Optional[Iterable[str]] = None) -> None:
-        self.params = {param.name: param for param in params}
+        self.params = OrderedDict([(param.name, param) for param in sorted(params, key=lambda param: param.name)])
         self.forbidden = forbidden
 
     def __str__(self):

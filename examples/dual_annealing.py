@@ -48,8 +48,9 @@ parameter_space = ParameterSpace([
 
 scenario = Scenario(
     max_experiments=180,
-    instances=[Rastrigin(dim) for dim in (10, 20, 30, 40, 50)],
+    instances=[Rastrigin(dim) for dim in (2, 3, 5, 10, 20, 40)],
     verbose=1,
+    seed=42,
 )
 
 if __name__ == '__main__':
