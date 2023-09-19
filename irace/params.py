@@ -101,7 +101,7 @@ class ParameterSpace:
     forbidden: Optional[Iterable[str]]
 
     def __init__(self, params: Iterable[ParameterSubspace], forbidden: Optional[Iterable[str]] = None) -> None:
-        self.params = OrderedDict([(param.name, param) for param in sorted(params, key=lambda param: param.name)])
+        self.params = OrderedDict([(param.name, param) for param in params])
         self.forbidden = forbidden
 
     def __str__(self):
