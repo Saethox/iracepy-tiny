@@ -21,7 +21,7 @@ Tested with Python 3.11.
 ### Installation
 
 ```shell
-pip install git+https://github.com/Saethox/iracepy-tiny@min-experiments
+pip install git+https://github.com/Saethox/iracepy-tiny
 ```
 
 ## Examples
