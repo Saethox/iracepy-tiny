@@ -12,7 +12,7 @@ def irace(target_runner: TargetRunner, scenario: Scenario, parameter_space: Para
     """irace: Iterated Racing for Automatic Algorithm Configuration."""
 
     from ._rpy2 import _irace, py2rpy_scenario, py2rpy_target_runner, \
-        py2rpy_parameter_space, converter, clean_result
+        py2rpy_parameter_space, converter, convert_result
 
     r_target_runner = py2rpy_target_runner(target_runner, scenario, parameter_space)
     r_scenario = py2rpy_scenario(scenario, r_target_runner)
@@ -21,7 +21,7 @@ def irace(target_runner: TargetRunner, scenario: Scenario, parameter_space: Para
     result = _irace.irace(r_scenario, r_parameter_space)
     result = converter.rpy2py(result)
 
-    return clean_result(result, parameter_space, return_df=return_df, remove_metadata=remove_metadata)
+    return convert_result(result, parameter_space, return_df=return_df, remove_metadata=remove_metadata)
 
 
 class IraceRun:
@@ -51,7 +51,7 @@ def multi_irace(runs: Iterable[IraceRun], n_jobs: int = 1, return_df: bool = Fal
         results = Parallel(n_jobs=n_jobs)(inner(run) for run in runs)
     else:
         from ._rpy2 import py2rpy_scenario, py2rpy_target_runner, py2rpy_parameter_space, _irace, ListVector, converter, \
-            clean_result
+            convert_result
         from multiprocessing import cpu_count
 
         if n_jobs < 0:
@@ -69,7 +69,7 @@ def multi_irace(runs: Iterable[IraceRun], n_jobs: int = 1, return_df: bool = Fal
         results = _irace.multi_irace(r_scenarios, r_parameter_spaces, parallel=parallel, global_seed=global_seed)
         results = converter.rpy2py(results)
 
-        results = [clean_result(converter.rpy2py(result), run.parameter_space)
+        results = [convert_result(converter.rpy2py(result), run.parameter_space)
                    for run, (_, result) in zip(runs, results.items())]
 
     if return_named:

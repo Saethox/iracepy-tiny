@@ -89,6 +89,20 @@ def convert_configuration(raw_configuration: dict[str, Any], parameter_space: Pa
     return configuration
 
 
+def convert_result(result: pd.DataFrame, parameter_space: ParameterSpace, return_df: bool = False,
+                   remove_metadata: bool = True) -> pd.DataFrame | list[dict[str, Any]]:
+    if remove_metadata:
+        result = result.loc[:, ~result.columns.str.startswith('.')]
+
+    result = [convert_configuration(configuration, parameter_space)
+              for configuration in result.to_dict('records')]
+
+    if return_df:
+        return pd.DataFrame.from_records(result)
+    else:
+        return result
+
+
 def rpy2py_experiment(obj: ListVector, scenario: Scenario, parameter_space: ParameterSpace) -> Experiment:
     experiment = rpy2py_recursive(obj)
 
@@ -172,17 +186,3 @@ def py2rpy_scenario(scenario: Scenario, r_target_runner: SexpClosure) -> ListVec
         r_scenario['seed'] = scenario.seed
 
     return _irace.checkScenario(ListVector(r_scenario))
-
-
-def clean_result(result: pd.DataFrame, parameter_space: ParameterSpace, return_df: bool = False,
-                 remove_metadata: bool = True) -> pd.DataFrame | list[dict[str, Any]]:
-    if remove_metadata:
-        result = result.loc[:, ~result.columns.str.startswith('.')]
-
-    cleaned_result = [convert_configuration(configuration, parameter_space)
-                      for configuration in result.to_dict('records')]
-
-    if return_df:
-        return pd.DataFrame.from_records(cleaned_result)
-    else:
-        return cleaned_result
