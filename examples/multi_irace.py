@@ -76,14 +76,13 @@ scenario = Scenario(
     max_experiments=180,
     instances=[Rastrigin(dim) for dim in (2, 3, 5, 10, 20, 40)],
     verbose=0,
-    seed=42,
 )
 
 if __name__ == '__main__':
     run1 = IraceRun(target_runner1, scenario, parameter_space1, name='dual_annealing')
     run2 = IraceRun(target_runner2, scenario, parameter_space2, name='differential_evolution')
 
-    results = multi_irace([run1, run2], return_named=True, return_df=True)
+    results = multi_irace([run1, run2], return_named=True, return_df=True, n_jobs=2, global_seed=42)
 
     for name, result in results.items():
         print(f"--- Tuning result for {name} ---")
