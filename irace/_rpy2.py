@@ -4,6 +4,7 @@ from collections import OrderedDict
 from typing import Any
 
 import numpy as np
+import pandas as pd
 from rpy2 import rinterface, robjects, rinterface_lib
 from rpy2.rinterface import SexpClosure, ListSexpVector, rternalize
 from rpy2.robjects import ListVector
@@ -58,10 +59,12 @@ def rpy2py_recursive(data: Any) -> Any:
             return data  # We reached the end of recursion
 
 
-def repair_configuration(configuration: dict[str, Any], parameter_space: ParameterSpace):
+def convert_configuration(raw_configuration: dict[str, Any], parameter_space: ParameterSpace) -> dict[str, Any]:
     """Convert the raw configuration into the appropriate type for the corresponding parameter subspace."""
 
-    for name, raw_param in configuration.items():
+    configuration = OrderedDict()
+
+    for name, raw_param in raw_configuration.items():
         subspace = parameter_space.get_subspace(name)
 
         # Ignore unknown metadata keys
@@ -83,6 +86,8 @@ def repair_configuration(configuration: dict[str, Any], parameter_space: Paramet
 
         configuration[name] = param
 
+    return configuration
+
 
 def rpy2py_experiment(obj: ListVector, scenario: Scenario, parameter_space: ParameterSpace) -> Experiment:
     experiment = rpy2py_recursive(obj)
@@ -97,8 +102,7 @@ def rpy2py_experiment(obj: ListVector, scenario: Scenario, parameter_space: Para
         instance_id = None
         instance = None
 
-    configuration = experiment['configuration']
-    repair_configuration(configuration, parameter_space)
+    configuration = convert_configuration(experiment['configuration'], parameter_space)
 
     experiment = Experiment(
         configuration_id=configuration_id,
@@ -168,3 +172,17 @@ def py2rpy_scenario(scenario: Scenario, r_target_runner: SexpClosure) -> ListVec
         r_scenario['seed'] = scenario.seed
 
     return _irace.checkScenario(ListVector(r_scenario))
+
+
+def clean_result(result: pd.DataFrame, parameter_space: ParameterSpace, return_df: bool = False,
+                 remove_metadata: bool = True) -> pd.DataFrame | list[dict[str, Any]]:
+    if remove_metadata:
+        result = result.loc[:, ~result.columns.str.startswith('.')]
+
+    cleaned_result = [convert_configuration(configuration, parameter_space)
+                      for configuration in result.to_dict('records')]
+
+    if return_df:
+        return pd.DataFrame.from_records(cleaned_result)
+    else:
+        return cleaned_result
