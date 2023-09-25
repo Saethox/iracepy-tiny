@@ -24,7 +24,7 @@ def irace(target_runner: TargetRunner, scenario: Scenario, parameter_space: Para
     return convert_result(result, parameter_space, return_df=return_df, remove_metadata=remove_metadata)
 
 
-class IraceRun:
+class Run:
     """A single run of irace with a given target runner, scenario and parameter space."""
 
     def __init__(self, target_runner: TargetRunner, scenario: Scenario, parameter_space: ParameterSpace,
@@ -35,7 +35,7 @@ class IraceRun:
         self.name = name
 
 
-def multi_irace(runs: Iterable[IraceRun], n_jobs: int = 1, return_df: bool = False, return_named: bool = False,
+def multi_irace(runs: Iterable[Run], n_jobs: int = 1, return_df: bool = False, return_named: bool = False,
                 remove_metadata: bool = True, global_seed: Optional[int] = None, joblib: bool = False) \
         -> list[pd.DataFrame] | list[list[dict[str, Any]]] | dict[str, list[dict[str, Any]]]:
     """Multiple executions of irace in parallel."""
@@ -44,7 +44,7 @@ def multi_irace(runs: Iterable[IraceRun], n_jobs: int = 1, return_df: bool = Fal
         from joblib import delayed, Parallel
 
         @delayed
-        def inner(run: IraceRun) -> pd.DataFrame | list[dict[str, Any]]:
+        def inner(run: Run) -> pd.DataFrame | list[dict[str, Any]]:
             return irace(target_runner=run.target_runner, scenario=run.scenario, parameter_space=run.parameter_space,
                          return_df=return_df, remove_metadata=remove_metadata)
 
