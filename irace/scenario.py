@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Optional, Sequence
 
 
@@ -12,6 +13,8 @@ class Scenario:
             instances: Optional[Sequence] = None,
             elitist: bool = True,
             deterministic: bool = False,
+            log_file: Optional[str | Path] = None,
+            exec_dir: Optional[str | Path] = None,
             n_jobs: int = 1,
             seed: Optional[int] = None,
             verbose: int = 0,
@@ -21,6 +24,8 @@ class Scenario:
         self.min_experiments = min_experiments
         self.elitist = elitist
         self.deterministic = deterministic
+        self.log_file = log_file
+        self.exec_dir = exec_dir
         self.n_jobs = n_jobs
         self.seed = seed
         self.verbose = verbose

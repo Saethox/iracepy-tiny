@@ -167,7 +167,6 @@ def py2rpy_scenario(scenario: Scenario, r_target_runner: SexpClosure) -> ListVec
         'quiet': int(scenario.verbose == 0),
         'debugLevel': scenario.verbose,
         'parallel': scenario.n_jobs,
-        'logFile': "",
     }
 
     if scenario.max_experiments is not None:
@@ -181,6 +180,14 @@ def py2rpy_scenario(scenario: Scenario, r_target_runner: SexpClosure) -> ListVec
     else:
         # Provide a dummy instance
         r_scenario['instances'] = [0]
+
+    if scenario.log_file is not None:
+        r_scenario['logFile'] = scenario.log_file
+    else:
+        r_scenario['logFile'] = ""
+
+    if scenario.exec_dir is not None:
+        r_scenario['execDir'] = scenario.exec_dir
 
     if scenario.seed is not None:
         r_scenario['seed'] = scenario.seed
