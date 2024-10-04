@@ -130,3 +130,9 @@ dmypy.json
 
 # Jetbrains
 .idea
+
+# Nix Direnv
+.envrc
+.direnv
+.nix
+.devenv
