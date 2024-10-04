@@ -8,6 +8,8 @@ not in static configuration files).
 
 For more information on `irace`, see its [documentation](https://mlopez-ibanez.github.io/irace/index.html) directly.
 
+If you need any options for `irace` that are not yet implemented here, feel free to open an issue or fork the repository and open a PR.
+
 ## Getting Started
 
 ### Requirements
@@ -20,7 +22,7 @@ Tested with Python 3.12.
 ### Installation
 
 ```shell
-pip install git+https://github.com/Saethox/iracepy-tiny
+pip install git+https://github.com/Saethox/iracepy-tiny#egg=irace
 ```
 
 ## Examples
