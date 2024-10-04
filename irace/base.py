@@ -7,31 +7,30 @@ from .runner import TargetRunner
 from .scenario import Scenario
 
 
-def irace(target_runner: TargetRunner, scenario: Scenario, parameter_space: ParameterSpace, return_df: bool = False,
+def irace(target_runner: TargetRunner, parameter_space: ParameterSpace, scenario: Scenario, return_df: bool = False,
           remove_metadata: bool = True) -> pd.DataFrame | list[dict[str, Any]]:
     """irace: Iterated Racing for Automatic Algorithm Configuration."""
 
-    from ._rpy2 import _irace, py2rpy_scenario, py2rpy_target_runner, \
-        py2rpy_parameter_space, converter, convert_result
+    from ._rpy2 import _irace, py2rpy_scenario, py2rpy_target_runner, py2rpy_parameter_space, converter, convert_result
 
     r_target_runner = py2rpy_target_runner(target_runner, scenario, parameter_space)
-    r_scenario = py2rpy_scenario(scenario, r_target_runner)
     r_parameter_space = py2rpy_parameter_space(parameter_space)
+    r_scenario = py2rpy_scenario(scenario, r_target_runner, r_parameter_space)
 
-    result = _irace.irace(r_scenario, r_parameter_space)
+    result = _irace.irace(r_scenario)
     result = converter.rpy2py(result)
 
     return convert_result(result, parameter_space, return_df=return_df, remove_metadata=remove_metadata)
 
 
 class Run:
-    """A single run of irace with a given target runner, scenario and parameter space."""
+    """A single run of irace with a given target runner and scenario."""
 
-    def __init__(self, target_runner: TargetRunner, scenario: Scenario, parameter_space: ParameterSpace,
+    def __init__(self, target_runner: TargetRunner, parameter_space: ParameterSpace, scenario: Scenario,
                  name: Optional[str] = None) -> None:
         self.target_runner = target_runner
-        self.scenario = scenario
         self.parameter_space = parameter_space
+        self.scenario = scenario
         self.name = name
 
 
@@ -45,7 +44,7 @@ def multi_irace(runs: Iterable[Run], n_jobs: int = 1, return_df: bool = False, r
 
         @delayed
         def inner(run: Run) -> pd.DataFrame | list[dict[str, Any]]:
-            return irace(target_runner=run.target_runner, scenario=run.scenario, parameter_space=run.parameter_space,
+            return irace(target_runner=run.target_runner, scenario=run.scenario,
                          return_df=return_df, remove_metadata=remove_metadata)
 
         results = Parallel(n_jobs=n_jobs)(inner(run) for run in runs)

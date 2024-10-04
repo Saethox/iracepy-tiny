@@ -49,10 +49,10 @@ parameter_space = ParameterSpace([
 scenario = Scenario(
     max_experiments=180,
     instances=[Rastrigin(dim) for dim in (2, 3, 5, 10, 20, 40)],
-    verbose=1,
+    verbose=100,
     seed=42,
 )
 
 if __name__ == '__main__':
-    result = irace(target_runner, scenario, parameter_space, return_df=True)
+    result = irace(target_runner, parameter_space, scenario, return_df=True)
     print(result)
