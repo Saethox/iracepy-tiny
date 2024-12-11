@@ -32,10 +32,11 @@
         src = builtins.fetchGit {
           url = "https://github.com/MLopez-Ibanez/irace";
           ref = "master";
-          rev = "1fdbba610a263a5dd2372a760d33164809e8495f";
+          rev = "30c8d4702960f76b31cdf4bf82c66082ab23934b";
         };
         # Dependencies extracted from `DESCRIPTION` file in repository.
-        propagatedBuildInputs = with pkgs.rPackages; [fs data_table matrixStats R6 spacefillr withr Rmpi highr knitr testthat];
+        propagatedBuildInputs = with pkgs.rPackages; [fs data_table matrixStats R6 spacefillr withr highr knitr testthat];
+        # Rmpi needed to be removed until it supports openmpi >= 5.0 properly
       };
   in {
     # Necessary for `rpy2` to be installable with poetry.
@@ -80,9 +81,8 @@
                   package = pkgs.python312;
                   poetry.enable = true;
                 };
-                r.enable = true;
               };
-              packages = [(irace-dev pkgs) pkgs.python312Packages.rpy2];
+              packages = [pkgs.R pkgs.mpi (irace-dev pkgs) pkgs.python312Packages.rpy2];
             }
           ];
         };

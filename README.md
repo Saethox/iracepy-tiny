@@ -14,10 +14,10 @@ If you need any options for `irace` that are not yet implemented here, feel free
 
 ### Requirements
 
-- [irace](https://mlopez-ibanez.github.io/irace/#github-development-version) R package (development version, currently [#1fdbba6](https://github.com/MLopez-Ibanez/irace/tree/1fdbba610a263a5dd2372a760d33164809e8495f))
+- [irace](https://mlopez-ibanez.github.io/irace/#github-development-version) R package (development version, currently [#30c8d47](https://github.com/MLopez-Ibanez/irace/tree/30c8d4702960f76b31cdf4bf82c66082ab23934b))
 - [Python](https://www.python.org)
 
-Tested with Python 3.12.
+Tested with Python 3.12 and R 4.4.1.
 
 ### Installation
 
