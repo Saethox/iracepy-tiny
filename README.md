@@ -25,6 +25,22 @@ Tested with Python 3.12.
 pip install git+https://github.com/Saethox/iracepy-tiny#egg=irace
 ```
 
+### Usage
+
+```python
+from irace import irace, ParameterSpace, Scenario, Experiment
+
+
+def target_runner(experiment: Experiment, scenario: Scenario) -> float:
+    ...
+
+
+parameter_space = ParameterSpace(...)
+scenario = Scenario(...)
+
+result = irace.irace(target_runner, parameter_space)
+```
+
 ## Examples
 
 See the [examples](./examples) directory.
