@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "iracepy-tiny"
+name = "irace"
 version = "0.2.0"
 description = "Pythonic bindings for irace: Iterated Racing for Automatic Algorithm Configuration."
 authors = [
