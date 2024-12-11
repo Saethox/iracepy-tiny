@@ -79,8 +79,8 @@ scenario = Scenario(
 )
 
 if __name__ == '__main__':
-    run1 = Run(target_runner1, scenario, parameter_space1, name='dual_annealing')
-    run2 = Run(target_runner2, scenario, parameter_space2, name='differential_evolution')
+    run1 = Run(target_runner1, parameter_space1, scenario, name='dual_annealing')
+    run2 = Run(target_runner2, parameter_space2, scenario, name='differential_evolution')
 
     results = multi_irace([run1, run2], return_named=True, return_df=True, n_jobs=2, global_seed=42)
 

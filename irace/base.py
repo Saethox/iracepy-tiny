@@ -44,7 +44,7 @@ def multi_irace(runs: Iterable[Run], n_jobs: int = 1, return_df: bool = False, r
 
         @delayed
         def inner(run: Run) -> pd.DataFrame | list[dict[str, Any]]:
-            return irace(target_runner=run.target_runner, scenario=run.scenario,
+            return irace(target_runner=run.target_runner, scenario=run.scenario, parameter_space=run.parameter_space,
                          return_df=return_df, remove_metadata=remove_metadata)
 
         results = Parallel(n_jobs=n_jobs)(inner(run) for run in runs)

@@ -32,15 +32,13 @@ except PackageNotInstalledError as e:
 converter = robjects.default_converter + robjects.numpy2ri.converter + robjects.pandas2ri.converter
 
 
+
 def rpy2py_recursive(data: Any) -> Any:
     """
     Step through an R object recursively and convert the types to python types as appropriate.
     Leaves will be converted to e.g. numpy arrays or lists as appropriate and the whole tree to a dictionary.
     """
-
-    if data in (
-            rinterface.NULL, rinterface.NA_Character, rinterface.NA_Real, rinterface.NA_Integer,
-            rinterface.NA_Logical, rinterface.NA):
+    if data in (rinterface.NULL, rinterface.NA) or isinstance(data, (rinterface_lib.sexp.NACharacterType,)):
         return None
     elif type(data) in [robjects.DataFrame, robjects.ListVector]:
         return OrderedDict(zip(data.names, [rpy2py_recursive(elt) for elt in data]))
@@ -53,7 +51,7 @@ def rpy2py_recursive(data: Any) -> Any:
         if len(data) == 1:
             return rpy2py_recursive(data[0])
         else:
-            return np.array(data)
+            return np.array([rpy2py_recursive(d) for d in data])
     else:
         if hasattr(data, "rclass"):  # An unsupported r class
             raise KeyError(f"conversion for `{type(data)}` is not defined")
@@ -78,12 +76,12 @@ def convert_configuration(raw_configuration: dict[str, Any], parameter_space: Pa
             continue
 
         if isinstance(subspace, p.Real):
-            param = float(raw_param)
+            param = float(raw_param) if not isinstance(raw_param, rinterface_lib.sexp.NARealType) else None
         elif isinstance(subspace, p.Integer):
-            param = int(raw_param)
+            param = int(raw_param) if not isinstance(raw_param, rinterface_lib.sexp.NAIntegerType) else None
         elif isinstance(subspace, p.Bool):
             # `bool` is represented as discrete with `["TRUE", "FALSE"]` variants.
-            param = bool(raw_param)
+            param = bool(raw_param) if not isinstance(raw_param, rinterface_lib.sexp.NACharacterType) else None
         elif isinstance(subspace, p.Categorical) or isinstance(subspace, p.Ordinal):
             # categorical and ordinal are represented as integers, so we need to convert to the real variant.
             param = subspace.values[int(raw_param)]
@@ -157,7 +155,7 @@ def py2rpy_parameter_space(parameter_space: ParameterSpace) -> ListVector:
             transf = "log" if subspace.log else ""
             r_subspace = constructor(name=subspace.name, lower=lower, upper=upper, condition=condition, transf=transf)
         elif isinstance(subspace, p.Bool):
-            # `bool` is represented as discrete with `["0", "1"]` variants.
+            # `bool` is represented as discrete with `["FALSE", "TRUE"]` variants.
             values = BoolVector([False, True])
             r_subspace = _irace.param_cat(subspace.name, values=values, condition=condition)
         elif isinstance(subspace, p.Categorical) or isinstance(subspace, p.Ordinal):
