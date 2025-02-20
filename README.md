@@ -38,7 +38,7 @@ def target_runner(experiment: Experiment, scenario: Scenario) -> float:
 parameter_space = ParameterSpace(...)
 scenario = Scenario(...)
 
-result = irace.irace(target_runner, parameter_space)
+result = irace(target_runner, parameter_space)
 ```
 
 ## Examples
