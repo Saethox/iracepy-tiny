@@ -15,6 +15,7 @@ def irace(target_runner: TargetRunner, parameter_space: ParameterSpace, scenario
 
     r_target_runner = py2rpy_target_runner(target_runner, scenario, parameter_space)
     r_parameter_space = py2rpy_parameter_space(parameter_space)
+    print(r_parameter_space)
     r_scenario = py2rpy_scenario(scenario, r_target_runner, r_parameter_space)
 
     result = _irace.irace(r_scenario)
@@ -60,9 +61,9 @@ def multi_irace(runs: Iterable[Run], n_jobs: int = 1, return_df: bool = False, r
         parallel = max(parallel, 1)
 
         r_target_runners = [py2rpy_target_runner(run.target_runner, run.scenario, run.parameter_space) for run in runs]
-        r_scenarios = ListVector([(i, py2rpy_scenario(run.scenario, r_target_runner))
+        r_scenarios = ListVector([(str(i), py2rpy_scenario(run.scenario, r_target_runner))
                                   for i, (run, r_target_runner) in enumerate(zip(runs, r_target_runners))])
-        r_parameter_spaces = ListVector([(i, py2rpy_parameter_space(run.parameter_space))
+        r_parameter_spaces = ListVector([(str(i), py2rpy_parameter_space(run.parameter_space))
                                          for i, run in enumerate(runs)])
 
         results = _irace.multi_irace(r_scenarios, r_parameter_spaces, parallel=parallel, global_seed=global_seed)

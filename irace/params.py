@@ -55,6 +55,17 @@ def any(*conditions: RCondition) -> RCondition:
     return reduce(RCondition.one, conditions)
 
 
+class RawRCondition(RCondition):
+
+    def __init__(self, condition: str) -> None:
+        self.condition = condition
+
+    def to_r_expression(self) -> str:
+        return self.condition
+
+    def __str__(self) -> str:
+        return self.condition
+
 class NegateRCondition(RCondition):
 
     def __init__(self, condition: RCondition) -> None:
@@ -68,12 +79,14 @@ class NegateRCondition(RCondition):
 
 
 class OneOfRCondition(RCondition):
-    def __init__(self, name: str, variants: Sequence) -> None:
+    def __init__(self, name: str, variants: Sequence[str]) -> None:
         self.name = name
         self.variants = variants
 
     def to_r_expression(self) -> str:
-        return f"({self.name} %in% c({', '.join(map(str, self.variants))}))"
+        # Quote string values for R
+        quoted_variants = [f'"{v}"' for v in self.variants]
+        return f"({self.name} %in% c({', '.join(quoted_variants)}))"
 
     def __str__(self) -> str:
         return f"({self.name} in [{', '.join(map(str, self.variants))}])"
@@ -104,14 +117,14 @@ class RLiteral(RExpression):
 
     def to_r_expression(self) -> str:
         if isinstance(self.value, str):
-            return f"\"{self.value}\""
+            return f'"{self.value}"'
         elif isinstance(self.value, bool):
             return 'TRUE' if self.value else 'FALSE'
         else:
             return str(self.value)
 
     def __str__(self) -> str:
-        return str(self.value) if not isinstance(self.value, str) else f"\"{self.value}\""
+        return str(self.value) if not isinstance(self.value, str) else f'"{self.value}"'
 
 
 def check_literal(value: Any) -> RExpression:
@@ -154,10 +167,11 @@ class ValueOf(RExpression):
     def inrange(self, lower: Any, upper: Any) -> RCondition:
         return self.ge(lower).both(self.le(upper))
 
-    def isin(self, variants: Sequence) -> RCondition:
+    def isin(self, variants: Sequence[str]) -> RCondition:
+        # Ensure variants are strings for categorical comparisons
         return OneOfRCondition(self.name, variants)
 
-    def notin(self, variants: Sequence) -> RCondition:
+    def notin(self, variants: Sequence[str]) -> RCondition:
         return self.isin(variants).negate()
 
     def to_r_expression(self) -> str:
@@ -206,23 +220,27 @@ class Integer(NumericalParameterSubspace):
 
 
 class DiscreteParameterSubspace(ParameterSubspace, metaclass=ABCMeta):
-    def __init__(self, name: str, variants: Sequence, condition: Optional[str | RCondition] = None):
+    def __init__(self, name: str, values: Sequence[str], condition: Optional[str | RCondition] = None):
         super().__init__(name=name, condition=condition)
-        self.values = variants
+        # Validate that all values are strings
+        if not all(isinstance(v, str) for v in values):
+            raise TypeError(f"All categorical values must be strings, got: {values}")
+        self.values = list(values)  # Convert to list to ensure consistency
 
     def __str__(self) -> str:
-        return f"{self.name}: [{', '.join(map(str, self.values))}]; {self._fmt_condition()}"
+        return f"{self.name}: [{', '.join(self.values)}]; {self._fmt_condition()}"
 
 
 class Categorical(DiscreteParameterSubspace):
-    """Categorical parameters are defined by a set of possible values specified as list."""
+    """Categorical parameters are defined by a set of possible string values."""
 
 
-class Bool(Categorical):
-    """Boolean parameters are expressed as categorical parameters with values `True` and `False`."""
+class Bool(DiscreteParameterSubspace):
+    """Boolean parameters are expressed as categorical parameters with values 'TRUE' and 'FALSE'."""
 
     def __init__(self, name: str, condition: Optional[str | RCondition] = None) -> None:
-        super().__init__(name=name, variants=[False, True], condition=condition)
+        # Use R's boolean string representations
+        super().__init__(name=name, values=['FALSE', 'TRUE'], condition=condition)
 
     def __str__(self) -> str:
         return f"{self.name}: bool; {self._fmt_condition()}"
@@ -231,7 +249,7 @@ class Bool(Categorical):
 class Ordinal(DiscreteParameterSubspace):
     """
     Ordinal parameters are defined by an ordered set of
-    possible values in the same format as for categorical parameters.
+    possible string values in the same format as for categorical parameters.
     """
 
 

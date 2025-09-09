@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from rpy2 import rinterface, robjects, rinterface_lib
 from rpy2.rinterface import SexpClosure, ListSexpVector, rternalize
-from rpy2.robjects import ListVector, IntVector, BoolVector, RObject
+from rpy2.robjects import ListVector, StrVector, RObject
 from rpy2.robjects import numpy2ri, pandas2ri
 from rpy2.robjects.packages import importr, PackageNotInstalledError
 
@@ -80,11 +80,14 @@ def convert_configuration(raw_configuration: dict[str, Any], parameter_space: Pa
         elif isinstance(subspace, p.Integer):
             param = int(raw_param) if not isinstance(raw_param, rinterface_lib.sexp.NAIntegerType) else None
         elif isinstance(subspace, p.Bool):
-            # `bool` is represented as discrete with `["TRUE", "FALSE"]` variants.
-            param = bool(raw_param) if not isinstance(raw_param, rinterface_lib.sexp.NACharacterType) else None
-        elif isinstance(subspace, p.Categorical) or isinstance(subspace, p.Ordinal):
-            # categorical and ordinal are represented as integers, so we need to convert to the real variant.
-            param = subspace.values[int(raw_param)]
+            # Bool values come as strings "TRUE" or "FALSE" from R
+            if isinstance(raw_param, str):
+                param = raw_param == "TRUE"
+            else:
+                param = None
+        elif isinstance(subspace, (p.Categorical, p.Ordinal)):
+            # Categorical and ordinal values are passed as strings directly
+            param = str(raw_param) if not isinstance(raw_param, rinterface_lib.sexp.NACharacterType) else None
         else:
             param = None
 
@@ -155,13 +158,16 @@ def py2rpy_parameter_space(parameter_space: ParameterSpace) -> ListVector:
             transf = "log" if subspace.log else ""
             r_subspace = constructor(name=subspace.name, lower=lower, upper=upper, condition=condition, transf=transf)
         elif isinstance(subspace, p.Bool):
-            # `bool` is represented as discrete with `["FALSE", "TRUE"]` variants.
-            values = BoolVector([False, True])
+            # Bool is represented as categorical with ["FALSE", "TRUE"] string values
+            values = StrVector(["FALSE", "TRUE"])
             r_subspace = _irace.param_cat(subspace.name, values=values, condition=condition)
-        elif isinstance(subspace, p.Categorical) or isinstance(subspace, p.Ordinal):
-            # categorical and ordinal are represented as integers.
-            values = IntVector(list(range(len(subspace.values))))
-            r_subspace = _irace.param_cat(subspace.name, values=values, condition=condition)
+        elif isinstance(subspace, (p.Categorical, p.Ordinal)):
+            # Pass string values directly to irace
+            values = StrVector(subspace.values)
+            if isinstance(subspace, p.Categorical):
+                r_subspace = _irace.param_cat(subspace.name, values=values, condition=condition)
+            else:
+                r_subspace = _irace.param_ord(subspace.name, values=values, condition=condition)
         else:
             raise ValueError("unknown parameter type")
 
