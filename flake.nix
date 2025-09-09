@@ -6,8 +6,6 @@
     systems.url = "github:nix-systems/default";
     devenv.url = "github:cachix/devenv";
     devenv.inputs.nixpkgs.follows = "nixpkgs";
-    poetry2nix.url = "github:nix-community/poetry2nix";
-    poetry2nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   nixConfig = {
@@ -20,52 +18,46 @@
     nixpkgs,
     devenv,
     systems,
-    poetry2nix,
     ...
   } @ inputs: let
     forEachSystem = nixpkgs.lib.genAttrs (import systems);
 
-    # `irace` development version.
-    irace-dev = pkgs:
+    # Irace 4.2 requires matrixStats >= 1.4.1, which is not yet in devenv nixpkgs.
+    matrixStats_1_5_0 = pkgs:
       pkgs.rPackages.buildRPackage {
-        name = "irace";
-        src = builtins.fetchGit {
-          url = "https://github.com/MLopez-Ibanez/irace";
-          ref = "master";
-          rev = "30c8d4702960f76b31cdf4bf82c66082ab23934b";
+        name = "matrixStats-1.5.0";
+        pname = "matrixStats";
+        version = "1.5.0";
+        src = pkgs.fetchurl {
+          url = "https://cran.r-project.org/src/contrib/matrixStats_1.5.0.tar.gz";
+          sha256 = "sha256-EplsXz5vwgKkPhCH8Wpxt/qT1+kI9RJULH7onPldzBU=";
+        };
+      };
+
+    irace_4_2_0 = pkgs:
+      pkgs.rPackages.buildRPackage {
+        name = "irace-4.2.0";
+        pname = "irace";
+        version = "4.2.0";
+        src = pkgs.fetchurl {
+          url = "https://cran.r-project.org/src/contrib/irace_4.2.0.tar.gz";
+          sha256 = "sha256-WM/mSHFBmBp5QRVX5wkGH/r8oVo2KJpx3U5QqK/kp7E=";
         };
         # Dependencies extracted from `DESCRIPTION` file in repository.
-        propagatedBuildInputs = with pkgs.rPackages; [fs data_table matrixStats R6 spacefillr withr highr knitr testthat];
-        # Rmpi needed to be removed until it supports openmpi >= 5.0 properly
-      };
-  in {
-    # Necessary for `rpy2` to be installable with poetry.
-    nixpkgs.overlays = [
-      (self: super: {
-        icuuc = self.icu;
-        icui18n = self.icu;
-        icudata = self.icu;
-      })
-    ];
-
-    packages = forEachSystem (system: let
-      pkgs = nixpkgs.legacyPackages.${system};
-      inherit (poetry2nix.lib.mkPoetry2Nix {inherit pkgs;}) mkPoetryApplication;
-    in {
-      devenv-up = self.devShells.${system}.default.config.procfileScript;
-      iracepy-tiny = mkPoetryApplication {
-        projectDir = self;
-        preferWheels = true;
-        python = pkgs.python312;
-        propagatedBuildInputs = [
-          pkgs.R
-          (irace-dev pkgs)
-          pkgs.python312Packages.rpy2
+        propagatedBuildInputs = with pkgs.rPackages; [
+          fs
+          data_table
+          R6
+          spacefillr
+          withr
+          highr
+          knitr
+          testthat
+          codetools
+          (matrixStats_1_5_0 pkgs)
         ];
       };
-      default = self.packages.${system}.iracepy-tiny;
-    });
-
+  in {
     devShells =
       forEachSystem
       (system: let
@@ -79,10 +71,13 @@
                 python = {
                   enable = true;
                   package = pkgs.python312;
-                  poetry.enable = true;
+                  uv = {
+                    enable = true;
+                    sync.enable = true;
+                  };
                 };
               };
-              packages = [pkgs.R pkgs.mpi (irace-dev pkgs) pkgs.python312Packages.rpy2];
+              packages = with pkgs; [R (irace_4_2_0 pkgs) libdeflate icu libz];
             }
           ];
         };

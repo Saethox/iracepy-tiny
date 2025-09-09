@@ -1,22 +1,38 @@
-[tool.poetry]
+[project]
 name = "irace"
 version = "0.2.0"
 description = "Pythonic bindings for irace: Iterated Racing for Automatic Algorithm Configuration."
 authors = [
-    "Manuel López-Ibáñez <manuel.lopez-ibanez@manchester.ac.uk>",
-    "Deyao Chen <chendeyao000@gmail.com>",
-    "Jonathan Wurth <jonathan.wurth@uni-a.de>"
+    { name = "Manuel López-Ibáñez", email = "manuel.lopez-ibanez@manchester.ac.uk" },
+    { name = "Deyao Chen", email = "chendeyao000@gmail.com" },
+    { name = "Jonathan Wurth", email = "jonathan.wurth@uni-a.de" },
 ]
 readme = "README.md"
+requires-python = ">=3.12"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "GPL-3.0-only"
+license-files = ["LICEN[CS]E*"]
+dependencies = [
+    "numpy>=2.0",
+    "rpy2>=3.5",
+    "pandas>=2.2",
+    "scipy>=1.14",
+    "joblib>=1.4",
+]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-numpy = "^2.0"
-rpy2 = "^3.5"
-scipy = "^1.14"
-pandas = "^2.2"
-joblib = "^1.4"
+[project.urls]
+Homepage = "https://github.com/Saethox/iracepy-tiny"
+Issues = "https://github.com/Saethox/iracepy-tiny/issues"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.ruff.lint]
+ignore = ["E701"]
