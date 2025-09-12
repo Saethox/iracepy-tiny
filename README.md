@@ -14,7 +14,7 @@ If you need any options for `irace` that are not yet implemented here, feel free
 
 ### Requirements
 
-- [irace](https://mlopez-ibanez.github.io/irace/) R package (version 4.2 from CRAN)
+- [irace](https://mlopez-ibanez.github.io/irace/) R package (version 4.3 from CRAN)
 - [Python](https://www.python.org)
 
 Tested with Python 3.12 and R 4.4.1.
