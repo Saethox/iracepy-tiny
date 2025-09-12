@@ -9,9 +9,8 @@ parameter_space = ParameterSpace([
     Real('rho', 0.01, 1),
     Integer('ants', 5, 100, log=True),
     Real('q0', 0, 1, condition=p.ValueOf('algorithm').eq('acs')),
-    # Dependent upper bounds in integer parameters is currently broken, see https://github.com/MLopez-Ibanez/irace/issues/87.
-    # Integer('rasrank', 1, p.ValueOf('ants').min(10), condition=p.ValueOf('algorithm').eq('ras')),
-    # Integer('elitistants', 1, p.ValueOf('ants'), condition=p.ValueOf('algorithm').eq('eas')),
+    Integer('rasrank', 1, p.ValueOf('ants').min(10), condition=p.ValueOf('algorithm').eq('ras')),
+    Integer('elitistants', 1, p.ValueOf('ants'), condition=p.ValueOf('algorithm').eq('eas')),
     Integer('nnls', 5, 50, condition=p.ValueOf('localsearch').isin(['1', '2', '3'])),
     Bool('dlb', condition=p.ValueOf('localsearch').isin(['1', '2', '3'])),
 ], forbidden=[p.all(p.ValueOf('alpha').eq(0), p.ValueOf('beta').eq(0))])

@@ -34,14 +34,14 @@
         };
       };
 
-    irace_4_2_0 = pkgs:
+    irace_4_3_0 = pkgs:
       pkgs.rPackages.buildRPackage {
-        name = "irace-4.2.0";
+        name = "irace-4.3";
         pname = "irace";
-        version = "4.2.0";
+        version = "4.3";
         src = pkgs.fetchurl {
-          url = "https://cran.r-project.org/src/contrib/irace_4.2.0.tar.gz";
-          sha256 = "sha256-WM/mSHFBmBp5QRVX5wkGH/r8oVo2KJpx3U5QqK/kp7E=";
+          url = "https://cran.r-project.org/src/contrib/irace_4.3.tar.gz";
+          sha256 = "sha256-TFghzfWGYcVfbUyY+pXBiGIr1x2nik0t5cpLwnxTLvc=";
         };
         # Dependencies extracted from `DESCRIPTION` file in repository.
         propagatedBuildInputs = with pkgs.rPackages; [
@@ -77,7 +77,7 @@
                   };
                 };
               };
-              packages = with pkgs; [R (irace_4_2_0 pkgs) libdeflate icu libz];
+              packages = with pkgs; [R (irace_4_3_0 pkgs) libdeflate icu libz];
             }
           ];
         };
